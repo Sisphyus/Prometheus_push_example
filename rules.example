@@ -1,0 +1,42 @@
+groups:
+- name: cnc_detect
+  rules:
+  - alert: node_offline
+    expr: delta(cnc_health_detect[30m]) == 0
+    for: 30m
+    labels:
+      severity: "warning"
+    annotations:
+      description: "Instance {{ $labels.instance }} is offline"
+
+  - alert: pollCrash_15s
+    expr: sum(count_over_time(cnc_http_detect{status!="200"}[1m]))/sum(count_over_time(cnc_http_detect{}[1m])) == 1
+    for: 1m
+    labels:
+      severity: "warning"
+    annotations:
+      description: "Instance {{ $labels.instance }} pollCrash_15s"
+
+  - alert: qos_down_vod_15s
+    expr: (count_over_time(cnc_http_detect{job="cnc_demand_elapsed_detect_100k",health="qos_down_vod_15s"}[3m]) + count_over_time(cnc_http_detect{job="cnc_demand_elapsed_detect_100k",status!="200"}[3m]))/count_over_time(cnc_http_detect{job="cnc_demand_elapsed_detect_100k"}[3m]) > 0.8
+    for: 3m
+    labels:
+      severity: "warning"
+    annotations:
+      description: "Instance {{ $labels.instance }} qos_down_vod_15s"
+
+  - alert: pic_qos_down
+    expr: (count_over_time(cnc_http_detect{job="cnc_http_1_elapsed_detect_8B",health="pic_qos_down"}[3m]) + count_over_time(cnc_http_detect{job="cnc_http_1_elapsed_detect_8B",status!="200"}[3m])) > 2 or (count_over_time(cnc_http_detect{job="cnc_http_2_elapsed_detect_8B",health="pic_qos_down"}[3m]) + count_over_time(cnc_http_detect{job="cnc_http_2_elapsed_detect_8B",status!="200"}[3m])) > 2
+    for: 3m
+    labels:
+      severity: "warning"
+    annotations:
+      description: "Instance {{ $labels.instance }} pic_qos_down"
+
+  - alert: livePollCrash_15s
+    expr: (count_over_time(cnc_http_detect{job="cnc_live_elapsed_detect_100k",health="livePollCrash_15s"}[1m]) + count_over_time(cnc_http_detect{job="cnc_live_elapsed_detect_100k",status!="200"}[1m]))/sum(count_over_time(cnc_http_detect{}[1m])) == 1
+    for: 1m
+    labels:
+      severity: "warning"
+    annotations:
+      description: "Instance {{ $labels.instance }} livePollCrash_15s"
